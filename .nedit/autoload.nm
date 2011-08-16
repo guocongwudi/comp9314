@@ -1,0 +1,8 @@
+#
+# 20060711 T. Bourke (TPB)
+#   Start CS1911 students in C mode.
+#
+if ($language_mode == "Plain" && $file_name == "Untitled") {
+    set_language_mode("C")
+}
+

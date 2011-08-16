@@ -1,0 +1,108 @@
+! Preferences file for NEdit
+!
+! 20060711 T.Bourke (TPB)
+!   Created custom setttings to match the CS1911 style guide which was
+!   developed by Richard Buckland with input from CS1911 tutors.
+!
+
+nedit.fileVersion: 5.5
+nedit.smartIndentInit: 	C:	#\n\
+	# Search backward for an anchor point: a line ending brace, or semicolon\n\
+	# or case statement, followed (ignoring blank lines and comments) by what we\n\
+	# assume is a properly indented line, a brace on a line by itself, or a case\n\
+	# statement.  Returns the position of the first non-white, non comment\n\
+	# character on the line.  returns -1 if an anchor position can't be found\n\
+	# before $cMaxSearchBackLines.\n\
+	#\n\
+	# 20060711 T. Bourke (TPB)\n\
+	#   Very small modification to the original (NEdit 5.5) to handle CS1911-style\n\
+	#   function braces:\n\
+	#        int notKandR(int a) {\n\
+	#            int foo;\n\
+	#        }\n\
+	#    NB: This version intends to replace the one inside the Common/Shared\n\
+	#        Initialization.\n\
+	#\n\
+	define cFindIndentAnchorPoint {\n\
+\n\
+	    nLines = 0\n\
+	    anchorPos = $1\n\
+	    for (i=$1-1; i>0; i--) {\n\
+		c = get_character(i)\n\
+		if (c == ";" || c == "{" || c == "}" || c == ":") {\n\
+\n\
+		    # Verify that it's line ending\n\
+		    lineEnd = cSkipBlankSpace(i+1, $1, 0)\n\
+		    if (lineEnd == -1 || \\\n\
+	    		    (lineEnd != $text_length && get_character(lineEnd) != "\\n"))\n\
+   			continue\n\
+\n\
+		    # if it's a colon, it's only meaningful if "case" begins the line\n\
+		    if (c == ":") {\n\
+	    		lineStart = startOfLine(i)\n\
+			caseStart = cSkipBlankSpace(lineStart, lineEnd, 0)\n\
+			if (get_range(caseStart, caseStart+4) != "case")\n\
+			    continue\n\
+			delim = get_character(caseStart+4)\n\
+			if (delim!=" " && delim!="\\t" && delim!="(" && delim!=":")\n\
+			    continue\n\
+			isCase = 1\n\
+		    } else\n\
+	    		isCase = 0\n\
+\n\
+		    # Move forward past blank lines and comment lines to find\n\
+		    #    non-blank, non-comment line-start\n\
+		    anchorPos = cSkipBlankSpace(lineEnd, $1, 1)\n\
+\n\
+		    # Accept if it's before the requested position, otherwise\n\
+		    #    continue further back in the file and try again\n\
+		    if (anchorPos != -1 && anchorPos < $1)\n\
+			break\n\
+\n\
+		    # A case statement by itself is an acceptable anchor\n\
+		    if (isCase)\n\
+	    		return caseStart\n\
+\n\
+		    # A brace on a line by itself is an acceptable anchor, even\n\
+		    #    if it doesn't follow a semicolon or another brace\n\
+		    if (c == "{" || c == "}") {\n\
+			for (j = i-1; ; j--) {\n\
+			    if (j == 0)\n\
+				return i\n\
+			    ch = get_character(j)\n\
+			    if (ch == "\\n" || ch == ")")  # TPB\n\
+			       return i\n\
+			    if (ch != "\\t" && ch != " ")\n\
+			       break\n\
+			}\n\
+		    }\n\
+\n\
+		} else if (c == "\\n")\n\
+		    if (++nLines > $cMaxSearchBackLines)\n\
+			return -1\n\
+	    }\n\
+	    if (i <= 0)\n\
+		return -1\n\
+	    return anchorPos\n\
+	}\n\
+	--End-of-Macro--\n\
+	return cFindSmartIndentDist($1)\n\
+	--End-of-Macro--\n\
+	if ($2 == "}" || $2 == "{" || $2 == "#")\n\
+	    cBraceOrPound($1, $2)\n\
+	--End-of-Macro--\n\
+	C++:Default\n\
+	Python:Default\n\
+	Matlab:Default
+nedit.wrapMargin: 72
+nedit.autoWrap: Newline
+nedit.autoIndent: Smart
+nedit.highlightSyntax: True
+nedit.statisticsLine: True
+nedit.lineNumbers: True
+nedit.textRows: 60
+nedit.textCols: 80
+nedit.tabDistance: 3
+nedit.emulateTabs: 3
+nedit.insertTabs: False
+

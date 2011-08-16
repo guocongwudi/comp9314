@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# startAct Which
+#	Set things up for Activity Which
+#	Do some error checking and execute startup script if all looks ok
+
+#CLASSHOME=/home/cs/orchestra/conductor/2/cs9315
+CLASSHOME=/home/cs9315
+PUBLIC=$CLASSHOME/public
+cmd=`basename $0`
+
+case $cmd in
+*lab*)	Act="Lab Class" ; Which="Week" ; DIR="$PUBLIC/labs"
+	;;
+*ass*)	Act="Assignment" ; Which="AssignName" ; DIR="$PUBLIC/assigns"
+	;;
+*)	echo "Invalid command: $0" >&2 ; exit
+	;;
+esac
+
+case $# in
+1)	if [ ! -d $DIR/$1 ]
+	then
+		echo "There is no $Act called $1" >&2
+		exit
+	elif [ ! -r $DIR/$1 ]
+   	then
+		echo "$Act $1 is not yet available" >&2
+		exit
+	elif [ ! -r $DIR/$1/startup ]
+	then
+		echo "$Act $1 is not set up properly" >&2
+		exit
+	else
+		/bin/sh $DIR/$1/startup
+	fi
+	;;
+*)	echo "Usage: $cmd $Which" >& 2
+	exit
+	;;
+esac

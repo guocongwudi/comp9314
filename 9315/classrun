@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export GIVECLASS=cs9315
+case $1 in
+    [0-9][0-9][sx][12]) export GIVEPERIOD=$1; shift;;
+    *) #echo "classrun: To access previous session, 'classrun SESSION OPTION'"
+	;;
+esac
+
+exec /usr/local/bin/classrun "$@"

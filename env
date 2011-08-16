@@ -1,0 +1,8 @@
+PGHOME=/usr/local/pgsql
+
+export PGDATA=/home/frank/9315/data
+
+export PGHOST=$PGHOME
+export PGPORT=5435
+export LD_LIBRARY_PATH=/usr/local/pgsql/lib
+export PATH=/usr/local/pgsql/bin:/home/frank/9315/9315:$PATH

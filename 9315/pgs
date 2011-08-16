@@ -1,0 +1,78 @@
+#!/bin/sh
+
+case $# in
+1) ;;
+*) echo "Usage $0 setup|cleanup|start|stop|status|log" ; exit 1 ;;
+esac
+
+if [ ! -d "/usr/local/pgsql" ]
+then
+	echo "You do not appear to have an installed PostgreSQL in /srvr/$USER/pgsql"
+	exit 1
+fi
+
+if [ ! -f "/home/frank/9315/env" ]
+then
+	echo "You have not copied the ~cs9315/web/11s2/postgresql/env file into /srvr/$USER"
+	exit 1
+fi
+
+source /home/frank/env
+
+echo "Using PostgreSQL with data directory $PGDATA"
+
+case "$1" in
+set*)
+	if [ -d "$PGDATA" ]
+	then
+		echo "You already have a data directory."
+		echo "If you want to replace it, first remove it via the command 'pgs cleanup'."
+		exit 1
+	fi
+	initdb -D "$PGDATA"
+	sed -e "s/^max_connections = 100/max_connections = 10/;
+		s+^#unix_socket_directory = ''+unix_socket_directory = '$PGHOST'+" $PGDATA/postgresql.conf > $PGDATA/.tmp
+	mv $PGDATA/.tmp $PGDATA/postgresql.conf
+	;;
+cle*)
+	if [ ! -d "$PGDATA" ]
+	then
+		echo "You have no data directory to clean up"
+		exit 1
+	fi
+	echo "This will remove all files under $PGDATA"
+	echo -n "Do you want to continue? "
+	read reply
+	case "$reply" in
+	y*|Y*) rm -fr $PGDATA ;;
+	*)     echo "OK. I won't do it." ;;
+	esac
+	;;
+start|1)
+	if [ ! -d "$PGDATA" ]
+	then
+		echo "However, the specified directory does not exist"
+		echo "If that was the intended data directory, then you will"
+		echo "first need to create it via the command 'pgs setup'"
+		exit 1
+	fi
+	pg_ctl -w -t 30 start -l $PGHOST/log
+	echo "Check whether the server started ok via the command 'psql -l'."
+	echo "If it's not working, check $PGHOST/log for details."
+	;;
+stop|0)
+	pg_ctl stop
+	;;
+stat*)
+	ps auwx | grep bin/postgres | grep -v cs3311psql | \
+		grep -v grep | sed -e 's+/tmp_amd/grieg/import/1+/srvr+' | \
+		sed -e 's+/export/grieg/1+/srvr+' | cut -c1-16,46- | sort 
+	;;
+log*)
+	tail -20 $PGHOST/log
+	;;
+*)
+	echo "Usage $0 setup|cleanup|start|stop"
+	exit 1
+	;;
+esac

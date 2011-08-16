@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if tty -s
+then
+  #
+  #  Probably will need to work out where we are coming from in the future..
+  #  Sun, DEC, that sort of thing to get this right for each architecture.
+  #
+  #  This is an stty command that expects to run on a Solaris machine.
+  #  The display/terminal is expected to be a DEC.
+  #
+  /bin/stty intr '^c' erase '^?' echoe echok
+fi
+
